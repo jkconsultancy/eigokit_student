@@ -1,0 +1,197 @@
+.game-container {
+  min-height: 100vh;
+  background: var(--background-color, #f5f5f5);
+  padding: 20px;
+}
+
+.game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.back-button {
+  padding: 10px 20px;
+  background: #666;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.game-stats {
+  display: flex;
+  gap: 20px;
+  font-weight: 600;
+  color: var(--primary-color, #3B82F6);
+}
+
+.match-game {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.word-column h3 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.word-button {
+  width: 100%;
+  padding: 15px;
+  margin-bottom: 10px;
+  background: white;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s;
+}
+
+.word-button:hover {
+  border-color: var(--primary-color, #3B82F6);
+}
+
+.word-button.selected {
+  background: var(--primary-color, #3B82F6);
+  color: white;
+}
+
+.sentence-builder {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.sentence-area,
+.words-area {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.sentence-display {
+  min-height: 100px;
+  padding: 20px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.sentence-word {
+  padding: 10px 15px;
+  background: var(--primary-color, #3B82F6);
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.words-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.word-block {
+  padding: 15px 20px;
+  background: #f0f0f0;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s;
+}
+
+.word-block:hover {
+  background: var(--primary-color, #3B82F6);
+  color: white;
+}
+
+.game-actions {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+}
+
+.check-button,
+.reset-button {
+  padding: 12px 30px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.check-button {
+  background: var(--primary-color, #3B82F6);
+  color: white;
+}
+
+.reset-button {
+  background: #666;
+  color: white;
+}
+
+.pronunciation-game {
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.word-display {
+  background: white;
+  padding: 40px;
+  border-radius: 12px;
+  margin-bottom: 30px;
+}
+
+.word-display h1 {
+  font-size: 48px;
+  color: var(--primary-color, #3B82F6);
+  margin-bottom: 10px;
+}
+
+.japanese-hint {
+  color: #666;
+  font-size: 20px;
+}
+
+.pronunciation-controls {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+}
+
+.record-button,
+.next-button {
+  padding: 15px 30px;
+  border: none;
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.record-button {
+  background: var(--accent-color, #F59E0B);
+  color: white;
+}
+
+.next-button {
+  background: var(--primary-color, #3B82F6);
+  color: white;
+}
+
+@media (max-width: 768px) {
+  .match-game {
+    grid-template-columns: 1fr;
+  }
+}
+
