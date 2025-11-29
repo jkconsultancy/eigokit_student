@@ -11,6 +11,7 @@ export default function Games() {
   const [gameConfig, setGameConfig] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [lastResult, setLastResult] = useState(null);
   const studentId = localStorage.getItem('studentId');
 
   useEffect(() => {
@@ -66,10 +67,12 @@ export default function Games() {
         content_ids: contentIds,
         difficulty_level: difficulty,
       });
-      alert(`Game completed! Score: ${score}`);
+      setLastResult({ gameType, score, when: new Date().toISOString() });
       setSelectedGame(null);
     } catch (error) {
       console.error('Failed to submit game session:', error);
+      setLastResult({ gameType, score, error: 'Failed to save game result.' });
+      setSelectedGame(null);
     }
   };
 
@@ -142,6 +145,26 @@ export default function Games() {
             </div>
           ))}
         </div>
+
+        {lastResult && (
+          <div className="game-result-card">
+            <h2>Last Game Result</h2>
+            <p>
+              Game:{' '}
+              <strong>
+                {games.find(g => g.id === lastResult.gameType)?.name || lastResult.gameType}
+              </strong>
+            </p>
+            <p>
+              Score: <strong>{lastResult.score}</strong>
+            </p>
+            {lastResult.error && (
+              <p className="error-message" style={{ marginTop: '8px' }}>
+                {lastResult.error}
+              </p>
+            )}
+          </div>
+        )}
 
         <Link to="/dashboard" className="back-link">
           ← Back to Dashboard

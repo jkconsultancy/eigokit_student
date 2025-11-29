@@ -11,7 +11,11 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!studentId) {
-      window.location.href = '/signin';
+      const selectedSchoolId = localStorage.getItem('selectedSchoolId');
+      const target = selectedSchoolId
+        ? `/schools/${selectedSchoolId}/signin`
+        : '/';
+      window.location.href = target;
       return;
     }
 
@@ -36,7 +40,11 @@ export default function Dashboard() {
   const handleLogout = () => {
     localStorage.removeItem('studentId');
     localStorage.removeItem('classId');
-    window.location.href = '/signin';
+    const selectedSchoolId = localStorage.getItem('selectedSchoolId');
+    const target = selectedSchoolId
+      ? `/schools/${selectedSchoolId}/signin`
+      : '/';
+    window.location.href = target;
   };
 
   if (loading) {

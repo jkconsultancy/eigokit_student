@@ -9,6 +9,21 @@ import Surveys from './pages/Surveys';
 import { loadTheme } from './lib/theme';
 import './App.css';
 
+function FallbackRoute() {
+  const studentId = localStorage.getItem('studentId');
+  const selectedSchoolId = localStorage.getItem('selectedSchoolId');
+
+  if (studentId) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  if (selectedSchoolId) {
+    return <Navigate to={`/schools/${selectedSchoolId}/signin`} replace />;
+  }
+
+  return <Navigate to="/" replace />;
+}
+
 function App() {
   useEffect(() => {
     // Load theme from school (in production, get schoolId from user context)
@@ -26,6 +41,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/games" element={<Games />} />
         <Route path="/surveys" element={<Surveys />} />
+        <Route path="*" element={<FallbackRoute />} />
       </Routes>
     </Router>
   );

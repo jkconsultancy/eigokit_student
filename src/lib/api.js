@@ -9,7 +9,7 @@ const api = axios.create({
 });
 
 // Global auth-ish error handling: if backend says this student is not allowed,
-// clear local identifiers and send them back to sign in.
+// clear local identifiers and send them back to their school-specific sign-in (or school selector).
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -17,8 +17,12 @@ api.interceptors.response.use(
     if (status === 401 || status === 403) {
       localStorage.removeItem('studentId');
       localStorage.removeItem('classId');
-      if (!window.location.pathname.startsWith('/signin')) {
-        window.location.href = '/signin';
+      const selectedSchoolId = localStorage.getItem('selectedSchoolId');
+      const target = selectedSchoolId
+        ? `/schools/${selectedSchoolId}/signin`
+        : '/';
+      if (window.location.pathname !== target) {
+        window.location.href = target;
       }
     }
     return Promise.reject(error);
