@@ -93,6 +93,23 @@ export const studentAPI = {
     const response = await api.get(`/api/content/grammar/${studentId}`);
     return response.data;
   },
+
+  evaluatePronunciation: async (studentId, audioBlob, referenceText) => {
+    const formData = new FormData();
+    formData.append('audio', audioBlob, 'recording.webm');
+    formData.append('reference_text', referenceText);
+
+    const response = await api.post(
+      `/api/students/${studentId}/pronunciation-eval`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+    return response.data;
+  },
 };
 
 export default api;

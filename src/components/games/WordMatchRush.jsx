@@ -66,8 +66,10 @@ export default function WordMatchRush({ config, onComplete, onBack }) {
         </div>
       </div>
 
-      <h2>Word Match Rush</h2>
-      <p>Match English words with their Japanese meanings</p>
+      <div className="game-title-section">
+        <h2>Word Match Rush</h2>
+        <p className="game-instructions">Match English words with their Japanese meanings</p>
+      </div>
 
       <div className="match-game">
         <div className="word-column">

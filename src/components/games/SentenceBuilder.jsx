@@ -52,8 +52,10 @@ export default function SentenceBuilder({ config, onComplete, onBack }) {
         </div>
       </div>
 
-      <h2>Sentence Builder Blocks</h2>
-      <p>Drag words to build the sentence</p>
+      <div className="game-title-section">
+        <h2>Sentence Builder Blocks</h2>
+        <p className="game-instructions">Drag words to build the sentence</p>
+      </div>
 
       <div className="sentence-builder">
         <div className="sentence-area">

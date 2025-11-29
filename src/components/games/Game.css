@@ -4,6 +4,24 @@
   padding: 20px;
 }
 
+.game-title-section {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.game-title-section h2 {
+  color: #333;
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.game-instructions {
+  color: #555;
+  font-size: 18px;
+  font-weight: 400;
+}
+
 .game-header {
   display: flex;
   justify-content: space-between;
@@ -187,6 +205,32 @@
 .next-button {
   background: var(--primary-color, #3B82F6);
   color: white;
+}
+
+.game-error,
+.game-loading {
+  max-width: 600px;
+  margin: 50px auto;
+  text-align: center;
+  background: white;
+  padding: 40px;
+  border-radius: 12px;
+}
+
+.game-error h2,
+.game-loading h2 {
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.error-message {
+  color: #d32f2f;
+  font-size: 16px;
+}
+
+.record-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 @media (max-width: 768px) {
