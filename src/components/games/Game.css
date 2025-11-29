@@ -114,6 +114,13 @@
   margin-bottom: 20px;
 }
 
+.sentence-area h3,
+.words-area h3 {
+  color: #333;
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+
 .sentence-display {
   min-height: 100px;
   padding: 20px;
@@ -146,6 +153,12 @@
   cursor: pointer;
   font-size: 16px;
   transition: all 0.2s;
+  color: #222;
+}
+
+.word-block:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .word-block:hover {
