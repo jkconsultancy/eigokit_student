@@ -1,13 +1,17 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { studentAPI } from '../lib/api';
+import ThemeToggle from '../components/ThemeToggle';
 import './Dashboard.css';
 
 export default function Dashboard() {
   const [progress, setProgress] = useState(null);
   const [leaderboard, setLeaderboard] = useState(null);
+  const [openSurveysCount, setOpenSurveysCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [checkingSurveys, setCheckingSurveys] = useState(true);
   const studentId = localStorage.getItem('studentId');
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!studentId) {
@@ -21,6 +25,11 @@ export default function Dashboard() {
 
     const loadData = async () => {
       try {
+        // Check for open surveys (but don't force redirect - just show badge)
+        const openSurveysData = await studentAPI.getOpenSurveys(studentId);
+        setOpenSurveysCount(openSurveysData.count || 0);
+        setCheckingSurveys(false);
+        
         const [progressData, leaderboardData] = await Promise.all([
           studentAPI.getProgress(studentId),
           studentAPI.getLeaderboard(studentId),
@@ -29,13 +38,30 @@ export default function Dashboard() {
         setLeaderboard(leaderboardData);
       } catch (error) {
         console.error('Failed to load dashboard:', error);
+        setCheckingSurveys(false);
       } finally {
         setLoading(false);
       }
     };
 
     loadData();
-  }, [studentId]);
+  }, [studentId, navigate]);
+
+  // Load open surveys count for badge (after initial check)
+  useEffect(() => {
+    if (!studentId || checkingSurveys) return;
+    
+    const loadSurveyCount = async () => {
+      try {
+        const openSurveysData = await studentAPI.getOpenSurveys(studentId);
+        setOpenSurveysCount(openSurveysData.count || 0);
+      } catch (error) {
+        console.error('Failed to load survey count:', error);
+      }
+    };
+    
+    loadSurveyCount();
+  }, [studentId, checkingSurveys]);
 
   const handleLogout = () => {
     localStorage.removeItem('studentId');
@@ -47,7 +73,7 @@ export default function Dashboard() {
     window.location.href = target;
   };
 
-  if (loading) {
+  if (loading || checkingSurveys) {
     return <div className="dashboard-loading">Loading...</div>;
   }
 
@@ -146,11 +172,15 @@ export default function Dashboard() {
           <Link to="/games" className="action-button primary">
             Play Games
           </Link>
-          <Link to="/surveys" className="action-button secondary">
+          <Link to="/surveys" className="action-button secondary survey-button">
             Take Survey
+            {openSurveysCount > 0 && (
+              <span className="survey-badge">{openSurveysCount}</span>
+            )}
           </Link>
         </div>
       </div>
+      <ThemeToggle />
     </div>
   );
 }

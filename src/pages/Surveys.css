@@ -1,7 +1,8 @@
 .surveys-page {
   min-height: 100vh;
-  background: var(--background-color, #f5f5f5);
+  background: var(--bg-secondary);
   padding: 20px;
+  color: var(--text-primary);
 }
 
 .surveys-container {
@@ -15,7 +16,7 @@
 }
 
 .subtitle {
-  color: #666;
+  color: var(--text-secondary);
   margin-bottom: 30px;
 }
 
@@ -35,19 +36,20 @@
 }
 
 .question-card {
-  background: white;
+  background: var(--bg-primary);
   padding: 25px;
   border-radius: 12px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  color: var(--text-primary);
 }
 
 .question-card h3 {
-  color: #333;
+  color: var(--text-primary);
   margin-bottom: 10px;
 }
 
 .question-jp {
-  color: #666;
+  color: var(--text-secondary);
   font-style: italic;
   margin-bottom: 20px;
 }
@@ -86,16 +88,20 @@
 
 .choice-button {
   padding: 12px 20px;
-  background: white;
-  border: 2px solid #ddd;
+  background: var(--bg-primary);
+  border: 2px solid var(--border-color);
   border-radius: 8px;
   text-align: left;
   cursor: pointer;
   transition: all 0.2s;
+  color: var(--text-primary);
+  font-size: 16px;
+  font-weight: 500;
 }
 
 .choice-button:hover {
-  border-color: var(--primary-color, #3B82F6);
+  border-color: var(--border-hover);
+  background: var(--bg-tertiary);
 }
 
 .choice-button.selected {
@@ -111,17 +117,19 @@
 .yes-no-button {
   flex: 1;
   padding: 15px;
-  background: white;
-  border: 2px solid #ddd;
+  background: var(--bg-primary);
+  border: 2px solid var(--border-color);
   border-radius: 8px;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
+  color: var(--text-primary);
 }
 
 .yes-no-button:hover {
-  border-color: var(--primary-color, #3B82F6);
+  border-color: var(--border-hover);
+  background: var(--bg-tertiary);
 }
 
 .yes-no-button.selected {
@@ -133,11 +141,13 @@
   width: 100%;
   min-height: 100px;
   padding: 12px;
-  border: 2px solid #ddd;
+  border: 2px solid var(--border-color);
   border-radius: 8px;
   font-size: 16px;
   font-family: inherit;
   resize: vertical;
+  background: var(--bg-primary);
+  color: var(--text-primary);
 }
 
 .short-answer:focus {
@@ -173,14 +183,17 @@
   cursor: not-allowed;
 }
 
-.cancel-link {
-  color: #666;
+.skip-link {
+  color: var(--text-secondary);
   text-decoration: none;
   font-weight: 600;
+  padding: 15px 20px;
+  transition: all 0.2s;
 }
 
-.cancel-link:hover {
+.skip-link:hover {
   text-decoration: underline;
+  color: var(--text-primary);
 }
 
 .back-link {

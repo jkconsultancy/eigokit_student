@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard';
 import Games from './pages/Games';
 import Surveys from './pages/Surveys';
 import { loadTheme } from './lib/theme';
+import { ThemeProvider } from './contexts/ThemeContext';
 import './App.css';
 
 function FallbackRoute() {
@@ -33,17 +34,19 @@ function App() {
   }, []);
 
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<SchoolSelector />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/schools/:schoolId/signin" element={<SignIn />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/games" element={<Games />} />
-        <Route path="/surveys" element={<Surveys />} />
-        <Route path="*" element={<FallbackRoute />} />
-      </Routes>
-    </Router>
+    <ThemeProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<SchoolSelector />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/schools/:schoolId/signin" element={<SignIn />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/games" element={<Games />} />
+          <Route path="/surveys" element={<Surveys />} />
+          <Route path="*" element={<FallbackRoute />} />
+        </Routes>
+      </Router>
+    </ThemeProvider>
   );
 }
 

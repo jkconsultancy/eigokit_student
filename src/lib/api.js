@@ -78,6 +78,11 @@ export const studentAPI = {
     return response.data;
   },
 
+  getOpenSurveys: async (studentId) => {
+    const response = await api.get(`/api/surveys/open/${studentId}`);
+    return response.data;
+  },
+
   getGameConfig: async (studentId) => {
     const response = await api.get(`/api/games/config/${studentId}`);
     return response.data;

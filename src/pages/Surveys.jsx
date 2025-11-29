@@ -153,7 +153,7 @@ export default function Surveys() {
           >
             {submitting ? 'Submitting...' : 'Submit Survey'}
           </button>
-          <Link to="/dashboard" className="cancel-link">Cancel</Link>
+          <Link to="/dashboard" className="skip-link">Skip</Link>
         </div>
       </div>
     </div>
