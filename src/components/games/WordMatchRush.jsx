@@ -2,46 +2,71 @@ import { useState, useEffect, useRef } from 'react';
 import './Game.css';
 
 export default function WordMatchRush({ config, onComplete, onBack }) {
-  const [words, setWords] = useState([]);
-  const [selectedWordId, setSelectedWordId] = useState(null);
-  const [selectedSide, setSelectedSide] = useState(null); // 'en' | 'jp' | null
+  // Immutable reference: All word pairs from server (never changes)
+  const wordPairsRef = useRef([]);
+  
+  // Mutable references: Randomized display lists
+  const [englishDisplayList, setEnglishDisplayList] = useState([]);
+  const [japaneseDisplayList, setJapaneseDisplayList] = useState([]);
+  
+  // Mutable reference: Current selections (max 1 English + 1 Japanese)
+  const [currentSelections, setCurrentSelections] = useState({
+    english: null, // { id, word } or null
+    japanese: null, // { id, word } or null
+  });
+  
+  // Visual feedback states
+  const [flashingCorrect, setFlashingCorrect] = useState(new Set()); // Word IDs flashing green
+  const [flashingIncorrectPair, setFlashingIncorrectPair] = useState(null); // { englishId: id, japaneseId: id } | null - ONLY the most recent incorrect pair
+  
+  // Game state
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(60);
   const [gameOver, setGameOver] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const [error, setError] = useState(null);
-  const [correctPairIds, setCorrectPairIds] = useState([]); // [id1, id2] while flashing green
-  const [incorrectPairIds, setIncorrectPairIds] = useState([]); // [id1, id2] while flashing red
   const [showResults, setShowResults] = useState(false);
   const [finalResults, setFinalResults] = useState(null);
   const timeoutRef = useRef(null);
   const timerIntervalRef = useRef(null);
 
+  // Helper function to shuffle an array
+  const shuffleArray = (array) => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
+
+  // Initialize game with word pairs from server
   useEffect(() => {
     const vocab = config?.vocabulary || [];
 
     if (!config) {
-      // Wait for config to load before initializing the game
       setInitialized(false);
-      setWords([]);
       return;
     }
 
     if (vocab.length === 0) {
-      // No words available for this student/class
       setError('No vocabulary available. Please ask your teacher to add vocabulary words.');
       setInitialized(true);
-      setWords([]);
       return;
     }
 
-    // Generate word pairs from config
-    const wordPairs = vocab.slice(0, 10).map(v => ({
+    // Store immutable reference: all word pairs from server
+    const pairs = vocab.slice(0, 10).map(v => ({
+      id: v.id,
       english: v.english_word,
       japanese: v.japanese_word,
-      id: v.id,
     }));
-    setWords(wordPairs);
+    wordPairsRef.current = pairs;
+
+    // Generate randomized mutable display lists
+    setEnglishDisplayList(shuffleArray(pairs.map(p => ({ id: p.id, word: p.english }))));
+    setJapaneseDisplayList(shuffleArray(pairs.map(p => ({ id: p.id, word: p.japanese }))));
+    
     setError(null);
     setInitialized(true);
 
@@ -63,78 +88,119 @@ export default function WordMatchRush({ config, onComplete, onBack }) {
     };
   }, [config]);
 
-  const handleWordClick = (clickedId, side) => {
-    if (!initialized || gameOver || !words.length) return;
-
-    // If we're currently animating a pair, ignore further clicks
-    if (correctPairIds.length > 0 || incorrectPairIds.length > 0) {
-      return;
+  // Check if current selections form a correct match
+  const checkMatch = () => {
+    const { english, japanese } = currentSelections;
+    
+    if (!english || !japanese) {
+      return false; // Need both selections
     }
 
-    const clickedWord = words.find((w) => w.id === clickedId);
-    if (!clickedWord) return;
-
-    // First selection
-    if (!selectedWordId) {
-      setSelectedWordId(clickedId);
-      setSelectedSide(side);
-      return;
-    }
-
-    // If they click the same word again (same ID and same side), just deselect
-    if (selectedWordId === clickedId && selectedSide === side) {
-      setSelectedWordId(null);
-      setSelectedSide(null);
-      return;
-    }
-
-    // Check if it's a match (same ID but different side)
-    const isMatch = selectedWordId === clickedId && selectedSide !== side;
-
-    // Clear any existing timeout
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
-
-    if (isMatch) {
-      // Correct: flash green for 1 second, then remove the pair and add score
-      setScore((prev) => prev + 10);
-      setCorrectPairIds([selectedWordId, clickedId]);
-      timeoutRef.current = setTimeout(() => {
-        setWords((prev) => prev.filter((w) => w.id !== selectedWordId));
-        setSelectedWordId(null);
-        setSelectedSide(null);
-        setCorrectPairIds([]);
-        timeoutRef.current = null;
-      }, 1000);
-    } else {
-      // Incorrect: flash red, then reset selection
-      setIncorrectPairIds([selectedWordId, clickedId]);
-      timeoutRef.current = setTimeout(() => {
-        setSelectedWordId(null);
-        setSelectedSide(null);
-        setIncorrectPairIds([]);
-        timeoutRef.current = null;
-      }, 600);
-    }
+    // Check against immutable server data reference
+    const pair = wordPairsRef.current.find(p => p.id === english.id);
+    return pair && pair.id === japanese.id; // Same ID means correct match
   };
 
-  // Handle game completion - show results instead of immediately calling onComplete
+  // Handle word click
+  const handleWordClick = (wordId, side) => {
+    if (!initialized || gameOver) return;
+    
+    // Ignore clicks during animations
+    if (flashingCorrect.size > 0 || flashingIncorrectPair !== null) {
+      return;
+    }
+
+    // Find the word in the immutable reference
+    const wordPair = wordPairsRef.current.find(p => p.id === wordId);
+    if (!wordPair) return;
+
+    const wordData = {
+      id: wordId,
+      word: side === 'en' ? wordPair.english : wordPair.japanese,
+    };
+
+    setCurrentSelections(prev => {
+      const newSelections = { ...prev };
+
+      // If clicking the same word again, deselect it
+      if (side === 'en') {
+        if (prev.english?.id === wordId) {
+          newSelections.english = null;
+          return newSelections;
+        }
+        newSelections.english = wordData;
+        // Can only have 1 English selection
+      } else {
+        if (prev.japanese?.id === wordId) {
+          newSelections.japanese = null;
+          return newSelections;
+        }
+        newSelections.japanese = wordData;
+        // Can only have 1 Japanese selection
+      }
+
+      // If we now have both selections, check for match
+      if (newSelections.english && newSelections.japanese) {
+        const isMatch = newSelections.english.id === newSelections.japanese.id;
+        
+        // Clear any existing timeout
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+          timeoutRef.current = null;
+        }
+
+        if (isMatch) {
+          // Correct match: flash both green, then remove from display
+          setScore(prev => prev + 10);
+          setFlashingCorrect(new Set([newSelections.english.id, newSelections.japanese.id]));
+          
+          timeoutRef.current = setTimeout(() => {
+            // Remove from display lists
+            setEnglishDisplayList(prev => prev.filter(w => w.id !== newSelections.english.id));
+            setJapaneseDisplayList(prev => prev.filter(w => w.id !== newSelections.japanese.id));
+            
+            // Clear selections and flash state
+            setCurrentSelections({ english: null, japanese: null });
+            setFlashingCorrect(new Set());
+            timeoutRef.current = null;
+          }, 1000);
+        } else {
+          // Incorrect match: flash ONLY this specific pair red, then clear selections
+          const englishId = newSelections.english.id;
+          const japaneseId = newSelections.japanese.id;
+          
+          // Store the exact pair that should flash
+          setFlashingIncorrectPair({ englishId, japaneseId });
+          
+          timeoutRef.current = setTimeout(() => {
+            // Clear selections and flash state
+            setCurrentSelections({ english: null, japanese: null });
+            setFlashingIncorrectPair(null);
+            timeoutRef.current = null;
+          }, 600);
+        }
+      }
+
+      return newSelections;
+    });
+  };
+
+  // Handle game completion
   useEffect(() => {
     if (!initialized || error || showResults) return;
-    if (!config || !config.vocabulary || config.vocabulary.length === 0) return;
+    if (!wordPairsRef.current.length) return;
 
-    if (gameOver || words.length === 0) {
+    const totalPairs = wordPairsRef.current.length;
+    const remainingPairs = englishDisplayList.length;
+
+    if (gameOver || remainingPairs === 0) {
       // Stop the timer
       if (timerIntervalRef.current) {
         clearInterval(timerIntervalRef.current);
         timerIntervalRef.current = null;
       }
 
-      // Calculate results
-      const totalPairs = config.vocabulary.slice(0, 10).length;
-      const matchedPairs = totalPairs - words.length;
+      const matchedPairs = totalPairs - remainingPairs;
       const completionTime = 60 - timeLeft;
       
       setFinalResults({
@@ -143,31 +209,26 @@ export default function WordMatchRush({ config, onComplete, onBack }) {
         completionTime,
         matchedPairs,
         totalPairs,
-        completed: words.length === 0, // true if all pairs matched, false if time ran out
+        completed: remainingPairs === 0,
       });
       setShowResults(true);
     }
-  }, [initialized, error, gameOver, words.length, config, score, timeLeft, showResults]);
+  }, [initialized, error, gameOver, englishDisplayList.length, score, timeLeft, showResults]);
 
   const handlePlayAgain = () => {
     // Reset game state
-    const vocab = config?.vocabulary || [];
-    const wordPairs = vocab.slice(0, 10).map(v => ({
-      english: v.english_word,
-      japanese: v.japanese_word,
-      id: v.id,
-    }));
+    const pairs = wordPairsRef.current;
     
-    setWords(wordPairs);
-    setSelectedWordId(null);
-    setSelectedSide(null);
+    setEnglishDisplayList(shuffleArray(pairs.map(p => ({ id: p.id, word: p.english }))));
+    setJapaneseDisplayList(shuffleArray(pairs.map(p => ({ id: p.id, word: p.japanese }))));
+    setCurrentSelections({ english: null, japanese: null });
     setScore(0);
     setTimeLeft(60);
     setGameOver(false);
     setShowResults(false);
     setFinalResults(null);
-    setCorrectPairIds([]);
-    setIncorrectPairIds([]);
+    setFlashingCorrect(new Set());
+    setFlashingIncorrectPair(null);
     
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
@@ -188,7 +249,8 @@ export default function WordMatchRush({ config, onComplete, onBack }) {
 
   const handleSaveAndExit = () => {
     if (finalResults) {
-      const contentIds = config?.vocabulary?.map(v => v.id) || [];
+      const contentIds = wordPairsRef.current.map(p => p.id);
+      // Submit game session - backend will update streak
       onComplete('word_match_rush', finalResults.score, contentIds, 1);
     }
   };
@@ -281,51 +343,60 @@ export default function WordMatchRush({ config, onComplete, onBack }) {
       <div className="match-game">
         <div className="word-column">
           <h3>English</h3>
-          {words.map((w) => {
-            const inCorrectPair = correctPairIds.includes(w.id);
-            const inIncorrectPair = incorrectPairIds.includes(w.id);
-            const statusClass = inCorrectPair
+          {englishDisplayList.map((w) => {
+            const isSelected = currentSelections.english?.id === w.id;
+            const isFlashingCorrect = flashingCorrect.has(w.id);
+            // Only flash if this is the English word in the current incorrect pair
+            const isFlashingIncorrect = flashingIncorrectPair?.englishId === w.id;
+            
+            const statusClass = isFlashingCorrect
               ? 'correct'
-              : inIncorrectPair
+              : isFlashingIncorrect
               ? 'incorrect'
-              : selectedWordId === w.id && selectedSide === 'en'
+              : isSelected
               ? 'selected'
               : '';
+            
             return (
-            <button
-              key={`en-${w.id}`}
-              className={`word-button ${statusClass}`}
-              onClick={() => handleWordClick(w.id, 'en')}
-            >
-              {w.english}
-            </button>
-          )})}
+              <button
+                key={`en-${w.id}`}
+                className={`word-button ${statusClass}`}
+                onClick={() => handleWordClick(w.id, 'en')}
+              >
+                {w.word}
+              </button>
+            );
+          })}
         </div>
 
         <div className="word-column">
           <h3>Japanese</h3>
-          {words.map((w) => {
-            const inCorrectPair = correctPairIds.includes(w.id);
-            const inIncorrectPair = incorrectPairIds.includes(w.id);
-            const statusClass = inCorrectPair
+          {japaneseDisplayList.map((w) => {
+            const isSelected = currentSelections.japanese?.id === w.id;
+            const isFlashingCorrect = flashingCorrect.has(w.id);
+            // Only flash if this is the Japanese word in the current incorrect pair
+            const isFlashingIncorrect = flashingIncorrectPair?.japaneseId === w.id;
+            
+            const statusClass = isFlashingCorrect
               ? 'correct'
-              : inIncorrectPair
+              : isFlashingIncorrect
               ? 'incorrect'
-              : selectedWordId === w.id && selectedSide === 'jp'
+              : isSelected
               ? 'selected'
               : '';
+            
             return (
-            <button
-              key={`jp-${w.id}`}
-              className={`word-button ${statusClass}`}
-              onClick={() => handleWordClick(w.id, 'jp')}
-            >
-              {w.japanese}
-            </button>
-          )})}
+              <button
+                key={`jp-${w.id}`}
+                className={`word-button ${statusClass}`}
+                onClick={() => handleWordClick(w.id, 'jp')}
+              >
+                {w.word}
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>
   );
 }
-
