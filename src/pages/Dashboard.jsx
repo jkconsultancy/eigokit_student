@@ -96,7 +96,7 @@ export default function Dashboard() {
     <div className="dashboard-page">
       <div className="dashboard-container">
         <div className="dashboard-header">
-          <h1>My Dashboard</h1>
+          <h1>{progress?.student_name ? `${progress.student_name}'s Dashboard` : 'My Dashboard'}</h1>
           <button className="logout-button" onClick={handleLogout}>
             Log Out
           </button>
