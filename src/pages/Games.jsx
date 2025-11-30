@@ -9,7 +9,9 @@ import './Games.css';
 export default function Games() {
   const [selectedGame, setSelectedGame] = useState(null);
   const [gameConfig, setGameConfig] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [lastResult, setLastResult] = useState(null);
   const studentId = localStorage.getItem('studentId');
 
   useEffect(() => {
@@ -20,10 +22,16 @@ export default function Games() {
 
     const loadConfig = async () => {
       try {
+        setLoading(true);
+        setError(null);
         const config = await studentAPI.getGameConfig(studentId);
         setGameConfig(config);
       } catch (error) {
         console.error('Failed to load game config:', error);
+        const errorMessage = error?.response?.data?.detail || error?.message || 'Failed to load game configuration';
+        setError(errorMessage);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -59,10 +67,12 @@ export default function Games() {
         content_ids: contentIds,
         difficulty_level: difficulty,
       });
-      alert(`Game completed! Score: ${score}`);
+      setLastResult({ gameType, score, when: new Date().toISOString() });
       setSelectedGame(null);
     } catch (error) {
       console.error('Failed to submit game session:', error);
+      setLastResult({ gameType, score, error: 'Failed to save game result.' });
+      setSelectedGame(null);
     }
   };
 
@@ -77,6 +87,42 @@ export default function Games() {
         />
       );
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="games-page">
+        <div className="games-container">
+          <h1>Practice Games</h1>
+          <p className="subtitle">Loading games...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="games-page">
+        <div className="games-container">
+          <h1>Practice Games</h1>
+          <div className="error-message" style={{ 
+            background: '#fee', 
+            padding: '20px', 
+            borderRadius: '8px', 
+            color: '#c33',
+            marginBottom: '20px'
+          }}>
+            <p><strong>Error:</strong> {error}</p>
+            <p style={{ fontSize: '14px', marginTop: '10px' }}>
+              Please try refreshing the page or contact your teacher if the problem persists.
+            </p>
+          </div>
+          <Link to="/dashboard" className="back-link">
+            ← Back to Dashboard
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -99,6 +145,26 @@ export default function Games() {
             </div>
           ))}
         </div>
+
+        {lastResult && (
+          <div className="game-result-card">
+            <h2>Last Game Result</h2>
+            <p>
+              Game:{' '}
+              <strong>
+                {games.find(g => g.id === lastResult.gameType)?.name || lastResult.gameType}
+              </strong>
+            </p>
+            <p>
+              Score: <strong>{lastResult.score}</strong>
+            </p>
+            {lastResult.error && (
+              <p className="error-message" style={{ marginTop: '8px' }}>
+                {lastResult.error}
+              </p>
+            )}
+          </div>
+        )}
 
         <Link to="/dashboard" className="back-link">
           ← Back to Dashboard

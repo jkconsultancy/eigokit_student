@@ -32,6 +32,9 @@
   border-radius: 12px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  min-height: 200px;
 }
 
 .game-card h2 {
@@ -42,6 +45,7 @@
 .game-card p {
   color: #666;
   margin-bottom: 20px;
+  flex-grow: 1;
 }
 
 .play-button {
@@ -71,6 +75,33 @@
 
 .back-link:hover {
   text-decoration: underline;
+}
+
+.game-result-card {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 30px;
+}
+
+.game-result-card h2 {
+  color: #333;
+  font-size: 20px;
+  margin-bottom: 15px;
+  font-weight: 700;
+}
+
+.game-result-card p {
+  color: #333;
+  font-size: 16px;
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+.game-result-card strong {
+  color: var(--primary-color, #3B82F6);
+  font-weight: 600;
 }
 
 @media (max-width: 768px) {

@@ -1,45 +1,94 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { studentAPI } from '../lib/api';
+import ThemeToggle from '../components/ThemeToggle';
 import './Dashboard.css';
 
 export default function Dashboard() {
   const [progress, setProgress] = useState(null);
   const [leaderboard, setLeaderboard] = useState(null);
+  const [openSurveysCount, setOpenSurveysCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [checkingSurveys, setCheckingSurveys] = useState(true);
   const studentId = localStorage.getItem('studentId');
+  const navigate = useNavigate();
+  const location = useLocation();
+  const prevPathnameRef = useRef(location.pathname);
 
-  useEffect(() => {
+  const loadData = async () => {
     if (!studentId) {
-      window.location.href = '/signin';
+      const selectedSchoolId = localStorage.getItem('selectedSchoolId');
+      const target = selectedSchoolId
+        ? `/schools/${selectedSchoolId}/signin`
+        : '/';
+      window.location.href = target;
       return;
     }
 
-    const loadData = async () => {
+    try {
+      // Check for open surveys (but don't force redirect - just show badge)
+      const openSurveysData = await studentAPI.getOpenSurveys(studentId);
+      setOpenSurveysCount(openSurveysData.count || 0);
+      setCheckingSurveys(false);
+      
+      const [progressData, leaderboardData] = await Promise.all([
+        studentAPI.getProgress(studentId),
+        studentAPI.getLeaderboard(studentId),
+      ]);
+      setProgress(progressData);
+      setLeaderboard(leaderboardData);
+    } catch (error) {
+      console.error('Failed to load dashboard:', error);
+      setCheckingSurveys(false);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, [studentId, navigate]);
+
+  // Refresh data when navigating to dashboard from another page (e.g., after playing a game)
+  useEffect(() => {
+    const prevPathname = prevPathnameRef.current;
+    const currentPathname = location.pathname;
+    
+    // Only refresh if we're on dashboard and came from a different page
+    if (currentPathname === '/dashboard' && prevPathname !== '/dashboard' && studentId && !loading) {
+      loadData();
+    }
+    
+    prevPathnameRef.current = currentPathname;
+  }, [location.pathname, studentId]);
+
+  // Load open surveys count for badge (after initial check)
+  useEffect(() => {
+    if (!studentId || checkingSurveys) return;
+    
+    const loadSurveyCount = async () => {
       try {
-        const [progressData, leaderboardData] = await Promise.all([
-          studentAPI.getProgress(studentId),
-          studentAPI.getLeaderboard(studentId),
-        ]);
-        setProgress(progressData);
-        setLeaderboard(leaderboardData);
+        const openSurveysData = await studentAPI.getOpenSurveys(studentId);
+        setOpenSurveysCount(openSurveysData.count || 0);
       } catch (error) {
-        console.error('Failed to load dashboard:', error);
-      } finally {
-        setLoading(false);
+        console.error('Failed to load survey count:', error);
       }
     };
-
-    loadData();
-  }, [studentId]);
+    
+    loadSurveyCount();
+  }, [studentId, checkingSurveys]);
 
   const handleLogout = () => {
     localStorage.removeItem('studentId');
     localStorage.removeItem('classId');
-    window.location.href = '/signin';
+    const selectedSchoolId = localStorage.getItem('selectedSchoolId');
+    const target = selectedSchoolId
+      ? `/schools/${selectedSchoolId}/signin`
+      : '/';
+    window.location.href = target;
   };
 
-  if (loading) {
+  if (loading || checkingSurveys) {
     return <div className="dashboard-loading">Loading...</div>;
   }
 
@@ -47,7 +96,7 @@ export default function Dashboard() {
     <div className="dashboard-page">
       <div className="dashboard-container">
         <div className="dashboard-header">
-          <h1>My Dashboard</h1>
+          <h1>{progress?.student_name ? `${progress.student_name}'s Dashboard` : 'My Dashboard'}</h1>
           <button className="logout-button" onClick={handleLogout}>
             Log Out
           </button>
@@ -138,11 +187,15 @@ export default function Dashboard() {
           <Link to="/games" className="action-button primary">
             Play Games
           </Link>
-          <Link to="/surveys" className="action-button secondary">
+          <Link to="/surveys" className="action-button secondary survey-button">
             Take Survey
+            {openSurveysCount > 0 && (
+              <span className="survey-badge">{openSurveysCount}</span>
+            )}
           </Link>
         </div>
       </div>
+      <ThemeToggle />
     </div>
   );
 }

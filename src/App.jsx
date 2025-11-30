@@ -7,7 +7,23 @@ import Dashboard from './pages/Dashboard';
 import Games from './pages/Games';
 import Surveys from './pages/Surveys';
 import { loadTheme } from './lib/theme';
+import { ThemeProvider } from './contexts/ThemeContext';
 import './App.css';
+
+function FallbackRoute() {
+  const studentId = localStorage.getItem('studentId');
+  const selectedSchoolId = localStorage.getItem('selectedSchoolId');
+
+  if (studentId) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  if (selectedSchoolId) {
+    return <Navigate to={`/schools/${selectedSchoolId}/signin`} replace />;
+  }
+
+  return <Navigate to="/" replace />;
+}
 
 function App() {
   useEffect(() => {
@@ -18,16 +34,19 @@ function App() {
   }, []);
 
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<SchoolSelector />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/schools/:schoolId/signin" element={<SignIn />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/games" element={<Games />} />
-        <Route path="/surveys" element={<Surveys />} />
-      </Routes>
-    </Router>
+    <ThemeProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<SchoolSelector />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/schools/:schoolId/signin" element={<SignIn />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/games" element={<Games />} />
+          <Route path="/surveys" element={<Surveys />} />
+          <Route path="*" element={<FallbackRoute />} />
+        </Routes>
+      </Router>
+    </ThemeProvider>
   );
 }
 

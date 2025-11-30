@@ -1,7 +1,8 @@
 .dashboard-page {
   min-height: 100vh;
-  background: var(--background-color, #f5f5f5);
+  background: var(--bg-secondary);
   padding: 20px;
+  color: var(--text-primary);
 }
 
 .dashboard-container {
@@ -61,7 +62,7 @@
 .progress-section h2,
 .leaderboard-section h2,
 .badges-section h2 {
-  color: #333;
+  color: var(--text-primary);
   margin-bottom: 20px;
 }
 
@@ -73,17 +74,25 @@
 }
 
 .progress-card {
-  background: white;
+  background: var(--bg-primary);
   padding: 20px;
   border-radius: 12px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  color: var(--text-primary);
+}
+
+.progress-card p {
+  color: var(--text-primary);
+  font-weight: 600;
+  margin: 0;
 }
 
 .progress-card h3 {
   margin: 0 0 15px 0;
-  color: #666;
+  color: var(--text-primary);
   font-size: 14px;
   text-transform: uppercase;
+  font-weight: 600;
 }
 
 .progress-bar {
@@ -121,10 +130,11 @@
 }
 
 .leaderboard-card {
-  background: white;
+  background: var(--bg-primary);
   padding: 30px;
   border-radius: 12px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  color: var(--text-primary);
 }
 
 .position-display {
@@ -140,8 +150,9 @@
 
 .position-label {
   display: block;
-  color: #666;
+  color: var(--text-secondary);
   margin-top: 5px;
+  font-weight: 500;
 }
 
 .category-positions {
@@ -154,8 +165,10 @@
   display: flex;
   justify-content: space-between;
   padding: 10px;
-  background: #f9f9f9;
+  background: var(--bg-tertiary);
   border-radius: 8px;
+  color: var(--text-primary);
+  font-weight: 500;
 }
 
 .badges-grid {
@@ -165,11 +178,12 @@
 }
 
 .badge-item {
-  background: white;
+  background: var(--bg-primary);
   padding: 15px;
   border-radius: 8px;
   text-align: center;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  color: var(--text-primary);
 }
 
 .actions-section {
@@ -202,7 +216,7 @@
 }
 
 .action-button.secondary {
-  background: white;
+  background: var(--bg-primary);
   color: var(--primary-color, #3B82F6);
   border: 2px solid var(--primary-color, #3B82F6);
 }
@@ -210,6 +224,30 @@
 .action-button.secondary:hover {
   background: var(--primary-color, #3B82F6);
   color: white;
+}
+
+.survey-button {
+  position: relative;
+}
+
+.survey-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #ef4444;
+  color: white;
+  border-radius: 12px;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  line-height: 1;
 }
 
 @media (max-width: 768px) {

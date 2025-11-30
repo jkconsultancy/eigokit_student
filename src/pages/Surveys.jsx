@@ -50,8 +50,9 @@ export default function Surveys() {
       alert('Survey submitted! Thank you!');
       window.location.href = '/dashboard';
     } catch (error) {
+      const errorMessage = error?.response?.data?.detail || error?.message || 'Failed to submit survey';
       console.error('Failed to submit survey:', error);
-      alert('Failed to submit survey. Please try again.');
+      alert(`Failed to submit survey: ${errorMessage}. Please try again.`);
     } finally {
       setSubmitting(false);
     }
@@ -152,7 +153,7 @@ export default function Surveys() {
           >
             {submitting ? 'Submitting...' : 'Submit Survey'}
           </button>
-          <Link to="/dashboard" className="cancel-link">Cancel</Link>
+          <Link to="/dashboard" className="skip-link">Skip</Link>
         </div>
       </div>
     </div>

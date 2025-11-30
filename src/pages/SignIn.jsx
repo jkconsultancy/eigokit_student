@@ -66,6 +66,8 @@ export default function SignIn() {
       const result = await studentAPI.signIn(iconSequence, schoolId);
       localStorage.setItem('studentId', result.student_id);
       localStorage.setItem('classId', result.class_id);
+      
+      // Navigate to dashboard (surveys are optional, not forced)
       navigate('/dashboard');
     } catch (err) {
       setError(err.response?.data?.detail || 'Sign in failed. Please check your icon sequence.');
