@@ -19,6 +19,8 @@ export default function SchoolSelector() {
   const loadSchools = async () => {
     try {
       const data = await studentAPI.getSchools();
+      // Backend should already filter to only active schools
+      // Trust the backend filtering - it filters by is_active = True and account_status != 'suspended'
       setSchools(data.schools || []);
     } catch (error) {
       console.error('Failed to load schools:', error);
@@ -57,14 +59,6 @@ export default function SchoolSelector() {
                 onClick={() => handleSelectSchool(school.id)}
               >
                 <h2>{school.name}</h2>
-                {school.icons && school.icons.length > 0 && (
-                  <div className="school-icons-preview">
-                    {school.icons.slice(0, 6).map((icon, index) => (
-                      <span key={index} className="preview-icon">{icon.emoji}</span>
-                    ))}
-                    {school.icons.length > 6 && <span className="more-icons">+{school.icons.length - 6}</span>}
-                  </div>
-                )}
               </button>
             ))
           ) : (

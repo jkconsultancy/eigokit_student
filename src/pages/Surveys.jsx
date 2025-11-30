@@ -47,6 +47,8 @@ export default function Surveys() {
           response,
         });
       }
+      // Clear skip flag since survey was submitted
+      sessionStorage.removeItem('surveySkipped');
       alert('Survey submitted! Thank you!');
       window.location.href = '/dashboard';
     } catch (error) {
@@ -153,7 +155,16 @@ export default function Surveys() {
           >
             {submitting ? 'Submitting...' : 'Submit Survey'}
           </button>
-          <Link to="/dashboard" className="skip-link">Skip</Link>
+          <Link 
+            to="/dashboard" 
+            className="skip-link"
+            onClick={() => {
+              // Store session flag that survey was skipped (only for this session)
+              sessionStorage.setItem('surveySkipped', 'true');
+            }}
+          >
+            Skip
+          </Link>
         </div>
       </div>
     </div>

@@ -81,6 +81,8 @@ export default function Dashboard() {
   const handleLogout = () => {
     localStorage.removeItem('studentId');
     localStorage.removeItem('classId');
+    // Clear session flag so survey appears again on next login
+    sessionStorage.removeItem('surveySkipped');
     const selectedSchoolId = localStorage.getItem('selectedSchoolId');
     const target = selectedSchoolId
       ? `/schools/${selectedSchoolId}/signin`

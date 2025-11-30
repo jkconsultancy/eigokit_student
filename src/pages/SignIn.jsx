@@ -67,7 +67,24 @@ export default function SignIn() {
       localStorage.setItem('studentId', result.student_id);
       localStorage.setItem('classId', result.class_id);
       
-      // Navigate to dashboard (surveys are optional, not forced)
+      // Check if user has skipped survey in this session
+      const hasSkippedSurvey = sessionStorage.getItem('surveySkipped') === 'true';
+      
+      // Check for open surveys and redirect if available (unless skipped this session)
+      if (!hasSkippedSurvey) {
+        try {
+          const openSurveysData = await studentAPI.getOpenSurveys(result.student_id);
+          if (openSurveysData.count > 0) {
+            navigate('/surveys');
+            return;
+          }
+        } catch (surveyError) {
+          console.error('Failed to check for surveys:', surveyError);
+          // Continue to dashboard if survey check fails
+        }
+      }
+      
+      // Navigate to dashboard if no surveys or survey was skipped
       navigate('/dashboard');
     } catch (err) {
       setError(err.response?.data?.detail || 'Sign in failed. Please check your icon sequence.');
